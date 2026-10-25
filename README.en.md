@@ -106,4 +106,9 @@ bash tests/run_all.sh
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
+[PolyForm Noncommercial License 1.0.0](LICENSE).
+
+- **Allowed:** noncommercial use, e.g. personal, hobby, research, education, and charitable or public institutions. The exact scope is defined in the [license](LICENSE).
+- **Only with the author's prior permission:** any commercial use. Please ask via the GitHub profile [nobelp](https://github.com/nobelp).
+
+Versions up to and including `v4.7.0` were released under the MIT License. MIT continues to apply to those versions.
