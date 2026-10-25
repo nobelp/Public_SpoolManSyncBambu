@@ -1,0 +1,57 @@
+# Git und Versionskontrolle
+# .git gehört NICHT in den Build-Context: Der Dockerfile liest keine Git-Daten,
+# die Versions-Info kommt über .version/.commit/.timestamp vom deploy_to_nas.sh.
+# Mitgeschickt kostete .git bei jedem Build ~6.5 MB Hashing auf der NAS-Platte.
+.git
+.gitignore
+.github
+
+# Lovelace-Karte: reines Frontend-Asset für HA, nicht Teil des Images.
+ha-lovelace-card
+
+# Python Cache
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.pytest_cache
+.tox
+
+# IDE und Editor
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Virtuelle Umgebungen
+venv
+env
+.venv
+
+# Deployment und Logs
+/logs
+/data
+*.log
+*.backup*
+
+# Dokumentation
+README.md
+CONTRIBUTING.md
+LICENSE
+CHANGELOG.md
+
+# Entwicklungs-Dateien
+.env.example
+.env.local
+test_*.py
+tests
+
+# macOS
+.DS_Store
+
+# Sonstige
+.dockerignore
+Dockerfile
+docker-compose.yml
+deploy_to_nas.sh

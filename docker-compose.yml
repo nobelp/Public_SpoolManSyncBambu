@@ -1,0 +1,63 @@
+# Alle drei Services laufen aus DEMSELBEN Image - sie unterscheiden sich nur im
+# entrypoint. Deshalb baut ausschliesslich spoolman-sync (build:) und vergibt den
+# festen Image-Namen; die beiden anderen verwenden dieses lokale Image.
+# WARUM: Vorher hatte jeder Service ein eigenes "build: ." - docker compose hat
+# damit dasselbe Image dreimal parallel gebaut. Auf der NAS (langsame Platten)
+# haben sich die drei Builds gegenseitig blockiert, bis der Build in
+# "DeadlineExceeded" lief. Ein Build statt drei.
+x-app: &app
+  image: div_spoolmansyncbambu:latest
+  restart: unless-stopped
+  env_file:
+    - .env
+  volumes:
+    - ./data:/app/data
+    - ./logs:/app/logs
+
+services:
+  # Job 1: Neuerkennung + Registrierung neuer Spulen in Spoolman
+  # Beim ersten Start: Auto-Init (Location-Reconciliation)
+  # Danach: Nur sync.py im Dauerbetrieb
+  # HINWEIS: Dieser Service baut das Image fuer alle drei.
+  spoolman-sync:
+    <<: *app
+    build: .
+    container_name: DIV_SpoolManSyncBambu
+    entrypoint: /app/entrypoint-sync.sh
+
+  # Job 2: Verbrauchs-Tracking - liest Restmengen nach und reduziert Spoolman.
+  # Enthaelt zusaetzlich die Druckverlauf-Webseite (Port 8100) mit Bild,
+  # Farbe/Verbrauch pro Druck und editierbarem Namen.
+  spoolman-consumption:
+    <<: *app
+    # pull_policy: never - das Image kommt aus dem lokalen Build von
+    # spoolman-sync und liegt in keiner Registry.
+    pull_policy: never
+    container_name: DIV_SpoolManSyncBambu_Consumption
+    entrypoint: /app/entrypoint-consumption.sh
+    ports:
+      - "8100:8100"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8100/api/version"]
+      interval: 10s
+      timeout: 3s
+      retries: 2
+      start_period: 15s
+
+  # Job 3: Filament-Anreicherung - liest per HA-Dashboard eingefuegte Produkt-URL,
+  # befuellt fehlende Stammdaten (Preis, Artikelnummer, Kommentar, ...) in Spoolman.
+  # Enthaelt zusaetzlich ein kleines Web-Formular (Port 8099) fuer Volltext-Import
+  # (umgeht Home Assistants 255-Zeichen-Limit fuer input_text).
+  spoolman-filament-enrich:
+    <<: *app
+    pull_policy: never
+    container_name: DIV_SpoolManSyncBambu_FilamentEnrich
+    entrypoint: /app/entrypoint-filament-enrich.sh
+    ports:
+      - "8099:8099"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8099/"]
+      interval: 10s
+      timeout: 3s
+      retries: 2
+      start_period: 15s

@@ -1,0 +1,21 @@
+# Konfiguration und Laufzeitdaten - nie versionieren
+.env
+data/
+logs/
+
+# Python
+__pycache__/
+*.pyc
+
+# Build-Info (wird bei Bedarf lokal erzeugt)
+.version
+.commit
+.timestamp
+
+# Editor und System
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.bak
+*.backup_*
